@@ -1,59 +1,64 @@
-let timer = 0;
-let isRunning = false;
+document.addEventListener('DOMContentLoaded', () => {
+  let timerButton = document.getElementById('timerButton');
+  let resetButton = document.getElementById('resetButton');
+  let isTimerRunning = false;
+  let isTimerPaused = false;
 
-startTimer = (duration) => {
-  let timerElement = document.getElementById("timer");
-  let startButton = document.getElementById("startButton");
-
-  timer = setInterval(function () {
-    let minutes = parseInt(duration / 60, 10);
-    let seconds = parseInt(duration % 60, 10);
-
-    timerElement = minutes + ":" + seconds;
-
-    if (duration <= 0) {
-      clearInterval(timer);
-      timerElement.textContent = "00:00";
-      startButton.textContent = "START";
-      isRunning = false;
-    }
-
-    duration--;
-  }, 1000);
-};
-
-document.addEventListener("DOMContentLoaded", function () {
-  let startButton = document.getElementById("startButton");
-  let resetButton = document.getElementById("resetButton");
-
-  startButton.addEventListener("click", function () {
-    if (isRunning) {
-      clearInterval(timer);
-      startButton.textContent = "Resume";
-    } else {
-      let shortBreakDuration = getInputValue("shortBreakDuration");
-      let longBreakDuration = getInputValue("longBreakDuration");
-      let workDuration = getInputValue("longBreakDuration");
-      //   let workDuration = parseInt(document.getElementById("workDuration").value, 10) * 60;
-      if (workDuration > 0 && shortBreakDuration > 0 && longBreakDuration > 0) {
-        startTimer(workDuration);
-        startButton.textContent = "Pause";
-      } else {
-        alert("Please enter valid durations greater than zero");
-      }
-    }
-
-    isRunning = !isRunning;
+  // Get the current duration from the background script and display it
+  chrome.runtime.sendMessage({action: 'getDuration'}, (response) => {
+    document.getElementById('timer').textContent = response.duration;
   });
 
-  function getInputValue(id) {
-    return parseInt(document.getElementById(id).value, 10) * 60;
-  }
+  chrome.storage.sync.get(['isTimerRunning', 'isTimerPaused'], (data) => {
+    isTimerRunning = data.isTimerRunning;
+    isTimerPaused = data.isTimerPaused;
+    if (isTimerRunning) {
+      timerButton.textContent = isTimerPaused ? 'Resume' : 'Pause';
+    }
+  });
 
-  resetButton.addEventListener("click", function () {
-    clearInterval(timer);
-    document.getElementById("timer").textContent = "25:00";
-    startButton.textContent = "Start";
-    isRunning = false;
+  timerButton.addEventListener('click', () => {
+    if (!isTimerRunning) {
+      let duration = parseInt(document.getElementById('workDuration').value, 10);
+      if (duration < 1) {
+        alert('Work duration must be at least 1 minute.');
+        return;
+      }
+
+      duration *= 60;
+      chrome.runtime.sendMessage({action: 'startTimer', duration: duration});
+      timerButton.textContent = 'Pause';
+      isTimerRunning = true;
+    } else if (!isTimerPaused) {
+      chrome.runtime.sendMessage({action: 'pauseTimer'});
+      timerButton.textContent = 'Resume';
+      isTimerPaused = true;
+    } else {
+      chrome.runtime.sendMessage({action: 'resumeTimer'});
+      timerButton.textContent = 'Pause';
+      isTimerPaused = false;
+    }
+    chrome.storage.sync.set({isTimerRunning: isTimerRunning, isTimerPaused: isTimerPaused});
+  });
+
+  resetButton.addEventListener('click', () => {
+    chrome.runtime.sendMessage({action: 'resetTimer'});
+    timerButton.textContent = 'Start';
+    isTimerRunning = false;
+    isTimerPaused = false;
+    // Store button state
+    chrome.storage.sync.set({isTimerRunning: isTimerRunning, isTimerPaused: isTimerPaused});
+  })
+
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'updateTimer') {
+      // Update the timer display
+      document.getElementById('timer').textContent = request.duration;
+    }
+  });
+
+  // Get the remaining duration from storage and display it
+  chrome.storage.sync.get('remainingDuration', (data) => {
+    document.getElementById('timer').textContent = data.remainingDuration;
   });
 });
