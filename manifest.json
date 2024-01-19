@@ -3,6 +3,10 @@
     "name": "Pomodoro Manifest",
     "version": "1.0.0",
     "description": "A basic manifest for a pomodoro timer",
+    "background": {
+      "scripts": ["background.js"],
+      "persistant": true
+    },
     "action": {
         "default_popup": "popup.html"
       },
