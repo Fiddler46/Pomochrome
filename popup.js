@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Get the current duration from the background script and display it
   chrome.runtime.sendMessage({action: 'getDuration'}, (response) => {
-    document.getElementById('timer').textContent = response.duration;
+    document.getElementById('timer').innerText = response.duration;
   });
 
   chrome.storage.sync.get(['isTimerRunning', 'isTimerPaused'], (data) => {
@@ -53,12 +53,12 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'updateTimer') {
       // Update the timer display
-      document.getElementById('timer').textContent = request.duration;
+      document.getElementById('timer').innerText = request.duration;
     }
   });
 
   // Get the remaining duration from storage and display it
   chrome.storage.sync.get('remainingDuration', (data) => {
-    document.getElementById('timer').textContent = data.remainingDuration;
+    document.getElementById('timer').innerText = data.remainingDuration;
   });
 });
