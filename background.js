@@ -11,18 +11,6 @@ const Session = {
 let currentSession = Session.Work;
 let workSessionsCompleted = 0;
 
-// chrome.runtime.onInstalled.addListener(async () => {
-//   for (const cs of chrome.runtime.getManifest().content_scripts) {
-//     for (const tab of await chrome.tabs.query({url: cs.matches})) {
-//       chrome.scripting.executeScript({
-//         target: {tabId: tab.id},
-//         files: cs.js,
-//       });
-//     }
-//   }
-// });
-
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'startTimer') {
     chrome.storage.sync.get(['workDuration', 'shortBreakDuration', 'longBreakDuration'], (data) => {
@@ -46,6 +34,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === 'getDuration') {
     sendResponse({duration: formatDuration(duration)});
   }
+
+  return true;
 });
 
 
@@ -54,19 +44,7 @@ function startTimer() {
   if (timer) {
     clearInterval(timer);
   }
-
-  // chrome.storage.sync.get(['workDuration', 'shortBreakDuration', 'longBreakDuration'], (data) => {
-  //   if (data.workDuration) {
-  //     let workDuration = data.workDuration;
-  //   }
-  //   if (data.shortBreakDuration) {
-  //     let shortBreakDuration = data.shortBreakDuration;
-  //   }
-  //   if (data.longBreakDuration) {
-  //     longBreakDuration = data.longBreakDuration;
-  //   }
-  // });
-
+  
   timer = setInterval(() => {
     if (!isPaused) {
       duration--;
@@ -110,3 +88,16 @@ function formatDuration(duration) {
   }
   return String(minutes) + ':' + String(seconds);
 }
+
+chrome.runtime.onConnect.addListener('DOMContentLoaded', (port) => {  
+  // Listen for messages from the popup
+  port.onMessage.addListener((msg) => {
+      // Check if the message is to execute myFunction
+      if (msg.action === 'formatThisDuration') {
+          myFunction(msg.argument);
+      }
+
+      return true;
+  });
+  return true;
+});
