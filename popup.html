@@ -13,27 +13,19 @@
   <body>
     <h1>Pomodoro Timer</h1>
 
-    <!-- <div>
-      <label for="workDuration">Work Duration (minutes):</label>
-      <input type="number" id="workDuration" value="25" min="1" />
-    </div>
-    <div>
-      <label for="shortBreakDuration">Short Break Duration (minutes):</label>
-      <input type="number" id="shortBreakDuration" value="5" min="1" />
-    </div>
-    <div>
-      <label for="longBreakDuration">Long Break Duration (minutes):</label>
-      <input type="number" id="longBreakDuration" value="15" min="1" />
-    </div> -->
     <div>
       <label for="durationSelect">Select Duration:</label>
       <select id="durationSelect" name="durationSelect">
-        <option id="workDuration" value="25">Pomodoro</option>
-        <option id="shortBreakDuration" value="5">Short Break</option>
-        <option id="longBreakDuration" value="15">Long Break</option>
+        <option id="workDuration">Pomodoro</option>
+        <option id="shortBreakDuration">Short Break</option>
+        <option id="longBreakDuration">Long Break</option>
       </select>
     </div>
-    <span id="timer"></span>
+    <div>
+      <label for="timeInput">in Minutes:</label>
+      <input type="number" id="timeInput" name="timeInput">
+    </div>
+    <p id="timer"</p>
     <div id="Buttons">
       <button id="timerButton">
         <span class="material-symbols-outlined">
