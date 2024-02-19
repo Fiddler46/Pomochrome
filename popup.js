@@ -1,12 +1,52 @@
 document.addEventListener("DOMContentLoaded", () => {
   let timerButton = document.getElementById("timerButton");
   let resetButton = document.getElementById("resetButton");
+  let durationSelect = document.getElementById("durationSelect");
+  let timeInput = document.getElementById("timeInput");
+  const setBtn = document.getElementById("setButton");
+  let timer = document.getElementById("timer");
   let isTimerRunning = false;
   let isTimerPaused = false;
+  let savedWork;
+  let savedShort;
+  let savedLong;
+  // let workDurationInput;
+  // let shortBreakDurationInput;
+  // let longBreakDurationInput;
+
+  durationSelect.addEventListener("change", () => {
+    if (savedWork && durationSelect.value == 'pomodoro') {
+      timeInput.value = savedWork;
+    } else if (savedShort && durationSelect.value == 'shortbreak') {
+      timeInput.value = savedShort;
+    } else if (savedLong && durationSelect.value == 'longbreak') {
+      timeInput.value = savedLong;
+    }
+  });
+  
+  timeInput.addEventListener("change", (event) => {
+    const val = event.target.value
+    if (val < 1 || val > 60) {
+        timeInput.value = 25;
+    }
+  });
+
+  setBtn.addEventListener("click", () => {
+    if(durationSelect.value == 'pomodoro') {
+      savedWork = localStorage.setItem('workDuration', timeInput.value);
+      // workDurationInput = timeInput.value;
+    } else if(durationSelect.value == 'shortbreak') {
+      savedShort = localStorage.setItem('shortBreakDuration', timeInput.value);
+      // shortBreakDurationInput = timeInput.value;
+    } else if(durationSelect.value == 'longbreak') {
+      savedLong = localStorage.setItem('longBreakDuration', timeInput.value);
+      // longBreakDurationInput = timeInput.value;
+    }
+  });
 
   // Get the current duration from the background script and display it
   chrome.runtime.sendMessage({ action: "getDuration" }, (response) => {
-    document.getElementById("timer").innerText = response.duration;
+    timer.innerText = response.duration;
   });
 
   chrome.storage.sync.get(["isTimerRunning", "isTimerPaused"], (data) => {
@@ -17,39 +57,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  let workDurationInput = document.getElementById("workDuration");
-  let shortBreakDurationInput = document.getElementById("shortBreakDuration");
-  let longBreakDurationInput = document.getElementById("longBreakDuration");
-
-  workDurationInput.addEventListener("change", () => {
-    chrome.storage.sync.set({
-      workDuration: parseInt(workDurationInput.value, 10) * 60,
-    });
-  });
-
-  shortBreakDurationInput.addEventListener("change", () => {
-    chrome.storage.sync.set({
-      shortBreakDuration: parseInt(shortBreakDurationInput.value, 10) * 60,
-    });
-  });
-
-  longBreakDurationInput.addEventListener("change", () => {
-    chrome.storage.sync.set({
-      longBreakDuration: parseInt(longBreakDurationInput.value, 10) * 60,
-    });
-  });
-
   timerButton.addEventListener("click", () => {
     if (!isTimerRunning) {
-      let duration = parseInt(
-        document.getElementById("workDuration").value,
-        10
-      );
+      // let duration = workDurationInput;
       if (duration < 1) {
         alert("Work duration must be at least 1 minute.");
         return;
       }
-
       duration *= 60;
       chrome.runtime.sendMessage({ action: "startTimer", duration: duration });
       timerButton.textContent = "Pause";
@@ -85,12 +99,12 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "updateTimer") {
       // Update the timer display
-      document.getElementById("timer").innerText = request.duration;
+      timer.innerText = request.duration;
     }
   });
 
   // Get the remaining duration from storage and display it
   chrome.storage.sync.get("remainingDuration", (data) => {
-    document.getElementById("timer").innerText = data.remainingDuration;
+    timer.innerText = data.remainingDuration;
   });
 });
