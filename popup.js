@@ -5,42 +5,38 @@ document.addEventListener("DOMContentLoaded", () => {
   let timeInput = document.getElementById("timeInput");
   const setBtn = document.getElementById("setButton");
   let timer = document.getElementById("timer");
+
   let isTimerRunning = false;
   let isTimerPaused = false;
   let savedWork;
   let savedShort;
   let savedLong;
-  // let workDurationInput;
-  // let shortBreakDurationInput;
-  // let longBreakDurationInput;
+  let duration;
 
   durationSelect.addEventListener("change", () => {
-    if (savedWork && durationSelect.value == 'pomodoro') {
+    if (savedWork && durationSelect.value == "pomodoro") {
       timeInput.value = savedWork;
-    } else if (savedShort && durationSelect.value == 'shortbreak') {
+    } else if (savedShort && durationSelect.value == "shortbreak") {
       timeInput.value = savedShort;
-    } else if (savedLong && durationSelect.value == 'longbreak') {
+    } else if (savedLong && durationSelect.value == "longbreak") {
       timeInput.value = savedLong;
     }
   });
-  
+
   timeInput.addEventListener("change", (event) => {
-    const val = event.target.value
+    const val = event.target.value;
     if (val < 1 || val > 60) {
-        timeInput.value = 25;
+      timeInput.value = 25;
     }
   });
 
   setBtn.addEventListener("click", () => {
-    if(durationSelect.value == 'pomodoro') {
-      localStorage.setItem('workDuration', JSON.stringify(savedWork));
-      // workDurationInput = timeInput.value;
-    } else if(durationSelect.value == 'shortbreak') {
-      localStorage.setItem('shortBreakDuration', JSON.stringify(savedShort));
-      // shortBreakDurationInput = timeInput.value;
-    } else if(durationSelect.value == 'longbreak') {
-      localStorage.setItem('longBreakDuration', JSON.stringify(savedLong));
-      // longBreakDurationInput = timeInput.value;
+    if (durationSelect.value == "pomodoro") {
+      chrome.storage.sync.set({ workDuration: savedWork });
+    } else if (durationSelect.value == "shortbreak") {
+      chrome.storage.sync.set({ shortBreakDuration: savedShort });
+    } else if (durationSelect.value == "longbreak") {
+      chrome.storage.sync.set({ longBreakDuration: savedLong });
     }
   });
 
@@ -59,11 +55,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   timerButton.addEventListener("click", () => {
     if (!isTimerRunning) {
-      // let duration = workDurationInput;
-      if (duration < 1) {
-        alert("Work duration must be at least 1 minute.");
+      if (timeInput.value < 1) {
+        alert("Duration must be at least 1 minute.");
         return;
       }
+      chrome.storage.sync.get("remainingDuration", (data) => {
+        duration = data.remainingDuration;
+      });
       duration *= 60;
       chrome.runtime.sendMessage({ action: "startTimer", duration: duration });
       timerButton.textContent = "Pause";
