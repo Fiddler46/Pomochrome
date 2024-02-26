@@ -33,13 +33,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setBtn.addEventListener("click", () => {
     if(durationSelect.value == 'pomodoro') {
-      savedWork = localStorage.setItem('workDuration', timeInput.value);
+      localStorage.setItem('workDuration', JSON.stringify(savedWork));
       // workDurationInput = timeInput.value;
     } else if(durationSelect.value == 'shortbreak') {
-      savedShort = localStorage.setItem('shortBreakDuration', timeInput.value);
+      localStorage.setItem('shortBreakDuration', JSON.stringify(savedShort));
       // shortBreakDurationInput = timeInput.value;
     } else if(durationSelect.value == 'longbreak') {
-      savedLong = localStorage.setItem('longBreakDuration', timeInput.value);
+      localStorage.setItem('longBreakDuration', JSON.stringify(savedLong));
       // longBreakDurationInput = timeInput.value;
     }
   });
